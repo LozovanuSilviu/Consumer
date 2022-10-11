@@ -1,19 +1,20 @@
-﻿using System.Text;
-using System.Text.Json.Serialization;
+﻿
+using System.Collections.Concurrent;
 using ConsumerServer.Controllers.Models;
 using Newtonsoft.Json;
+using RestSharp;
 
 namespace ConsumerServer.Services;
 
 public class ConsumerService
 {
-    private readonly Queue<Letter> _queue;
+    private readonly ConcurrentQueue<Letter> _queue;
     private readonly ILogger<ConsumerService> _logger;
 
     public ConsumerService(ILogger<ConsumerService> logger)
     {
         _logger = logger;
-        _queue = new Queue<Letter>();
+        _queue = new ConcurrentQueue<Letter>();
         Run();
     }
 
@@ -38,10 +39,11 @@ public class ConsumerService
             {
                 _queue.TryDequeue(out Letter letter);
 
-                var client = new HttpClient();
+                var client = new RestClient("http://localhost:5000");
                 var serialized = JsonConvert.SerializeObject(letter);
-                await client.PostAsync("http://localhost:5019/api/sent/to/producer",
-                    new StringContent(serialized, Encoding.UTF32, "applications/json"));
+                var request = new RestRequest("/api/send/to/producer", Method.Post);
+                request.AddJsonBody(serialized);
+                await client.ExecuteAsync(request);
             }
         }
     }

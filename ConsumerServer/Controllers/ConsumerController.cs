@@ -21,7 +21,7 @@ namespace ConsumerServer.Controllers
         [HttpPost("send/to/consumer")]
         public IActionResult SendToConsumer(Letter letter)
         {
-            _logger.LogInformation($"Received a letter from {letter.SenderName} with messsage {letter.Message}");
+            _logger.LogInformation($"Received a letter from '{letter.SenderName}' with messsage '{letter.Message}'");
             _service.Enqueue(letter);
             return Ok();
         }
