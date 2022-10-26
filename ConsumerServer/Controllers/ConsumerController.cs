@@ -19,10 +19,10 @@ namespace ConsumerServer.Controllers
         }
 
         [HttpPost("send/to/consumer")]
-        public IActionResult SendToConsumer(Letter letter)
+        public IActionResult SendToConsumer(News news)
         {
-            _logger.LogInformation($"Received a letter from '{letter.SenderName}' with messsage '{letter.Message}'");
-            _service.Enqueue(letter);
+            _logger.LogInformation($"Breaking news for your attention '{news.Message}'");
+            _service.Enqueue(news);
             return Ok();
         }
     }
