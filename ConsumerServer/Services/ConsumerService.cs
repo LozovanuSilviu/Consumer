@@ -6,16 +6,14 @@ namespace ConsumerServer.Services;
 
 public class ConsumerService
 {
-    private readonly Queue<News> _queue;
+    private readonly Queue<ProccessedNews> _queue;
     private readonly ILogger<ConsumerService> _logger;
     public Mutex mutex { get; set; }
-    public Mutex mutex1 { get; set; }
     public ConsumerService(ILogger<ConsumerService> logger)
     {
         _logger = logger;
-        _queue = new Queue<News>();
+        _queue = new Queue<ProccessedNews>();
         mutex = new Mutex();
-        mutex1 = new Mutex();
         Run();
     }
 
@@ -30,12 +28,7 @@ public class ConsumerService
         return Task.CompletedTask;
     }
 
-    public void ThreadProccess()
-    {
-        SendFeedback();
-    }
-
-    public void Enqueue(News news)
+    public void Enqueue(ProccessedNews news)
     {
         mutex.WaitOne();
             _queue.Enqueue(news);
@@ -46,17 +39,18 @@ public class ConsumerService
     {
         while (true)
         {
-            mutex1.WaitOne();
+            mutex.WaitOne();
                 if (_queue.Count !=0)
                 {
-                    _queue.TryDequeue(out News news);
-                    var client = new RestClient("http://localhost:5000");
+                    _queue.TryDequeue(out ProccessedNews news);
+                    var client = new RestClient("http://localhost:5086");
                     var serialized = JsonConvert.SerializeObject(news);
-                    var request = new RestRequest("/api/send/to/producer", Method.Post);
-                    request.AddJsonBody(serialized);
-                    var response =client.ExecuteAsync(request);
+                    var request = new RestRequest("/api/send/back/to/aggregator", Method.Post);
+                    request.AddJsonBody(serialized); 
+                    client.ExecuteAsync(request);
+                    
                 }  
-                mutex1.ReleaseMutex();
+                mutex.ReleaseMutex();
         }
     }
 }
