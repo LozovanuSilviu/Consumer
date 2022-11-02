@@ -19,9 +19,9 @@ namespace ConsumerServer.Controllers
         }
 
         [HttpPost("send/to/consumer")]
-        public IActionResult SendToConsumer(News news)
+        public IActionResult SendToConsumer(ProccessedNews news)
         {
-            _logger.LogInformation($"Breaking news for your attention '{news.Message}'");
+            _logger.LogInformation($"Breaking news for your attention this is the {news.index} news with '{news.message} for today'");
             _service.Enqueue(news);
             return Ok();
         }
